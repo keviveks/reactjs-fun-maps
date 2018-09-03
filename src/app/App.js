@@ -17,10 +17,10 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <h1 className="App-title">Welcome to React Fun Maps</h1>
+          <h1 className="App-title">React Fun Maps</h1>
         </header>
         <Router>
-          <div>
+          <div className="Routers">
             <Navigation />
             <hr/>
 
