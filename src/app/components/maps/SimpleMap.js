@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import GoogleMapReact from 'google-map-react';
+import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+import GoogleMapWrapper from '../../GoogleMapWrapper';
 import { GOOGLE_MAP_API_KEY } from '../../constants/secrets';
 
-const SimpleMapPage = () =>
+const SimpleMapPage = (props) =>
   <div>
     <h2>Simple Map</h2>
-    <SimpleMap />
+    <SimpleMap google={props.google} />
   </div>
 
 class SimpleMap extends Component {
@@ -17,18 +19,51 @@ class SimpleMap extends Component {
     zoom: 11
   };
 
-  render() { 
+  componentDidMount() {
+    this.loadMap();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.google !== this.props.google) {
+      this.loadMap();
+    }
+  }
+
+  loadMap() {
+    if (this.props && this.props.google) {
+      let { google, center, zoom } = this.props;
+      const maps = google.maps;
+
+      const mapRef = this.refs.map;
+      const node = ReactDOM.findDOMNode(mapRef);
+
+      const { lat, lng } = center;
+      center = new maps.LatLng(lat, lng);
+
+      const mapConfig = {
+        center: center,
+        zoom: zoom,
+      };
+      this.map = new maps.Map(node, mapConfig);
+    }
+  }
+
+  render() {
+    const style = { width: '100vw', height: '100vh' };
     return (
-      <div style={{ height: '100vh', width: '100%' }}>
-        <GoogleMapReact
-          bootstrapURLKeys={{ key: GOOGLE_MAP_API_KEY }}
-          defaultCenter={this.props.center}
-          defaultZoom={this.props.zoom}
-        >
-        </GoogleMapReact>
+      <div ref="map" style={style}>
+        Loading map...
       </div>
     );
   }
 }
- 
-export default SimpleMapPage;
+
+SimpleMap.propTypes = {
+  google: PropTypes.object,
+  zoom: PropTypes.number,
+  center: PropTypes.object,
+};
+
+export default GoogleMapWrapper({
+  apiKey: GOOGLE_MAP_API_KEY
+})(SimpleMapPage);
