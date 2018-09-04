@@ -5,17 +5,17 @@ import GoogleMapWrapper from '../../GoogleMapWrapper';
 import Marker from '../../utils/map/Marker';
 import { GOOGLE_MAP_API_KEY } from '../../constants/secrets';
 
-// const pos = {
-//   lat: 12.9716,
-//   lng: 77.5946
-// };
+const pos = {
+  lat: 12.9716,
+  lng: 77.5946
+};
 
 const CurrentMapPage = (props) =>
   <div>
     <h2>Current User Location Map</h2>
     <CurrentMap google={props.google}>
-      <Marker />
-      {/* <Marker position={pos} /> */}
+      {/* <Marker /> */}
+      <Marker position={pos} />
     </CurrentMap>
   </div>
 
