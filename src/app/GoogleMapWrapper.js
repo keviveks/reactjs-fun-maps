@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import cache from './utils/ScriptCache'
-import GoogleApi from './utils/GoogleApi'
+import cache from './utils/lib/ScriptCache'
+import GoogleApi from './utils/lib/GoogleApi'
 
 const defaultMapConfig = {}
 export const wrapper = (options) => (WrappedComponent) => {
