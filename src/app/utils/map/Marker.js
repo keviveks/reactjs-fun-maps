@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { camalize } from '../lib/String';
+import { camelize } from '../lib/String';
 import { wrappedPromise } from '../lib/Promise';
 
 const eventNames = [
@@ -74,7 +74,7 @@ class Marker extends Component {
 
   handleEvent(event) {
     return (e) => {
-      const eventName = `on${camalize(event)}`;
+      const eventName = `on${camelize(event)}`;
       if (this.props[eventName]) {
         this.props[eventName](this.props, this.marker, e);
       }

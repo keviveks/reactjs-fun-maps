@@ -1,78 +1,130 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
+import React from 'react';
+// import ReactDOM from 'react-dom';
 
-import cache from './utils/lib/ScriptCache'
-import GoogleApi from './utils/lib/GoogleApi'
+import {ScriptCache} from './utils/lib/ScriptCache';
+import GoogleApi from './utils/lib/GoogleApi';
 
-const defaultMapConfig = {}
-export const wrapper = (options) => (WrappedComponent) => {
+// const defaultMapConfig = {};
+
+const serialize = obj => JSON.stringify(obj);
+const isSame = (obj1, obj2) => obj1 === obj2 || serialize(obj1) === serialize(obj2);
+
+const defaultCreateCache = options => {
+  options = options || {};
   const apiKey = options.apiKey;
   const libraries = options.libraries || ['places'];
+  const version = options.version || '3';
+  const language = options.language || 'en';
+  const url = options.url;
+  const client = options.client;
 
+  return ScriptCache({
+    google: GoogleApi({
+      apiKey: apiKey,
+      language: language,
+      libraries: libraries,
+      version: version,
+      url: url,
+      client: client
+    })
+  });
+};
+
+const DefaultLoadingContainer = props => <div>Loading...</div>;
+
+export const wrapper = input => WrappedComponent => {
   class Wrapper extends React.Component {
     constructor(props, context) {
       super(props, context);
 
+      // Build options from input
+      const options = typeof input === 'function' ? input(props) : input;
+
+      // Initialize required Google scripts and other configured options
+      this.initialize(options);
+
       this.state = {
         loaded: false,
         map: null,
-        google: null
+        google: null,
+        options: options
+      };
+    }
+
+    componentWillReceiveProps(props) {
+      // Do not update input if it's not dynamic
+      if (typeof input !== 'function') {
+        return;
       }
-    }
 
-    componentDidMount() {
-      const refs = this.refs;
-      this.scriptCache.google.onLoad((err, tag) => {
-        const maps = window.google.maps;
-        // const props = Object.assign({}, this.props, {
-        //   loaded: this.state.loaded
-        // });
+      // Get options to compare
+      const prevOptions = this.state.options;
+      const options = typeof input === 'function' ? input(props) : input;
 
-        const mapRef = refs.map;
+      // Ignore when options are not changed
+      if (isSame(options, prevOptions)) {
+        return;
+      }
 
-        const node = ReactDOM.findDOMNode(mapRef);
-        let center = new maps.LatLng(this.props.lat, this.props.lng)
+      // Initialize with new options
+      this.initialize(options);
 
-        let mapConfig = Object.assign({}, defaultMapConfig, {
-          center, zoom: this.props.zoom
-        })
-
-        this.map = new maps.Map(node, mapConfig);
-
-        this.setState({
-          loaded: true,
-          map: this.map,
-          google: window.google
-        })
+      // Save new options in component state,
+      // and remove information about previous API handlers
+      this.setState({
+        options: options,
+        loaded: false,
+        google: null
       });
     }
 
-    componentWillMount() {
-      this.scriptCache = cache({
-        google: GoogleApi({
-          apiKey: apiKey,
-          libraries: libraries
-        })
-      });
+    initialize(options) {
+      // Avoid race condition: remove previous 'load' listener
+      if (this.unregisterLoadHandler) {
+        this.unregisterLoadHandler();
+        this.unregisterLoadHandler = null;
+      }
+
+      // Load cache factory
+      const createCache = options.createCache || defaultCreateCache;
+
+      // Build script
+      this.scriptCache = createCache(options);
+      this.unregisterLoadHandler =
+        this.scriptCache.google.onLoad(this.onLoad.bind(this));
+
+      // Store information about loading container
+      this.LoadingContainer =
+        options.LoadingContainer || DefaultLoadingContainer;
+    }
+
+    onLoad(err, tag) {
+      this._gapi = window.google;
+
+      this.setState({loaded: true, google: this._gapi});
     }
 
     render() {
+      const {LoadingContainer} = this;
+      if (!this.state.loaded) {
+        return <LoadingContainer />;
+      }
+
       const props = Object.assign({}, this.props, {
         loaded: this.state.loaded,
-        map: this.state.map,
-        google: this.state.google,
-        mapComponent: this.refs.map
-      })
+        google: window.google
+      });
+
       return (
         <div>
           <WrappedComponent {...props} />
-          <div ref='map' />
+          <div ref="map" />
         </div>
-      )
+      );
     }
   }
 
   return Wrapper;
-}
+};
 
 export default wrapper;

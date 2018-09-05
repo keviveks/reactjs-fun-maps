@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react';
 import PropTypes from 'prop-types';
-
-import { camalize } from '../lib/String';
+import ReactDOM from 'react-dom';
+import { camelize } from '../lib/String';
 import { makeCancelable } from '../lib/Promise';
 
 const mapStyles = {
@@ -43,7 +42,14 @@ const evtNames = [
   'zoom_changed'
 ];
 
-class Map extends Component {
+// export {wrapper as GoogleApiWrapper} from '../../GoogleMapWrapper';
+// export {Marker} from './components/Marker';
+// export {InfoWindow} from './components/InfoWindow';
+// export {HeatMap} from './components/HeatMap';
+// export {Polygon} from './components/Polygon';
+// export {Polyline} from './components/Polyline';
+
+export class Map extends React.Component {
   constructor(props) {
     super(props);
 
@@ -177,7 +183,7 @@ class Map extends Component {
 
   handleEvent(evtName) {
     let timeout;
-    const handlerName = `on${camalize(evtName)}`;
+    const handlerName = `on${camelize(evtName)}`;
 
     return e => {
       if (timeout) {
@@ -287,7 +293,7 @@ Map.propTypes = {
   bounds: PropTypes.object
 };
 
-evtNames.forEach(e => (Map.propTypes[camalize(e)] = PropTypes.func));
+evtNames.forEach(e => (Map.propTypes[camelize(e)] = PropTypes.func));
 
 Map.defaultProps = {
   zoom: 14,

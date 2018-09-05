@@ -1,42 +1,48 @@
 export const GoogleApi = function(opts) {
-    opts = opts || {}
+  opts = opts || {};
 
-    const apiKey = opts.apiKey;
-    const libraries = opts.libraries || [];
-    const client = opts.client;
-    const URL = 'https://maps.googleapis.com/maps/api/js';
+  if (!opts.hasOwnProperty('apiKey')) {
+    throw new Error('You must pass an apiKey to use GoogleApi');
+  }
 
-    const googleVersion = '3.34';
-    // let script = null;
-    // let google = window.google = null;
-    // let loading = false;
-    let channel = null;
-    let language = null;
-    let region = null;
+  const apiKey = opts.apiKey;
+  const libraries = opts.libraries || ['places'];
+  const client = opts.client;
+  const URL = opts.url || 'https://maps.googleapis.com/maps/api/js';
 
-    // let onLoadEvents = [];
+  const googleVersion = opts.version || '3.34';
 
-    const url = () => {
-      let url = URL;
-      let params = {
-        key: apiKey,
-        callback: 'CALLBACK_NAME',
-        libraries: libraries.join(','),
-        client: client,
-        v: googleVersion,
-        channel: channel,
-        language: language,
-        region: region
-      }
+  // let script = null;
+  // let google = (typeof window !== 'undefined' && window.google) || null;
+  // let loading = false;
+  let channel = null;
+  let language = opts.language;
+  let region = opts.region || null;
 
-      let paramStr = Object.keys(params)
-          .filter(k => !!params[k])
-          .map(k => `${k}=${params[k]}`).join('&');
+  // let onLoadEvents = [];
 
-      return `${url}?${paramStr}`;
-    }
+  const url = () => {
+    let url = URL;
+    let params = {
+      key: apiKey,
+      callback: 'CALLBACK_NAME',
+      libraries: libraries.join(','),
+      client: client,
+      v: googleVersion,
+      channel: channel,
+      language: language,
+      region: region
+    };
 
-    return url();
-}
+    let paramStr = Object.keys(params)
+      .filter(k => !!params[k])
+      .map(k => `${k}=${params[k]}`)
+      .join('&');
 
-export default GoogleApi
+    return `${url}?${paramStr}`;
+  };
+
+  return url();
+};
+
+export default GoogleApi;
